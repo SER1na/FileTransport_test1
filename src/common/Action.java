@@ -1,0 +1,7 @@
+package common;
+
+public enum Action {
+    LOGIN,LOGOUT,REGISTER,
+    SENDFILE,RECFILE,
+    LOGINSUCCESS,REGISTERSUCCESS,LOGOUTSUCCESS
+}

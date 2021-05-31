@@ -90,9 +90,9 @@ public class Client {
             client_socket.close();
             System.exit(1);
         }
-        //如果正确，则发送文件信息
 
-        //读取文件信息
+
+        //如果收到正确响应，则开始发送文件
         FileInputStream fr = new FileInputStream(file);
         //发送文件信息
         byte[] buf = new byte[1024];
@@ -105,6 +105,12 @@ public class Client {
         //关流
         out.close();
         fr.close();
+
+        //接收服务器的响应文件上传成功...
+
+
+
+
         //可以先不关闭socket连接
         client_socket.close();
     }

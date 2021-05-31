@@ -88,6 +88,13 @@ public class Task implements Runnable {
                 fos.write(bufIn, 0, len);
             }
             fos.close();
+            //再发送一个响应让发送方得知文件上传成功？
+
+            //服务器暂存文件
+            //转发给指定老师端...待实现
+
+
+
             client_socket.close();
         }catch(Exception e){
             e.printStackTrace();

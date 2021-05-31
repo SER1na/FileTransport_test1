@@ -1,7 +1,7 @@
 package common;
 
 public enum Action {
-    LOGIN,LOGOUT,REGISTER,
+    LOGIN,LOGOUT,REGISTER,  //登录登出注册
     SENDFILE,RECFILE,
     LOGINSUCCESS,REGISTERSUCCESS,LOGOUTSUCCESS
 }

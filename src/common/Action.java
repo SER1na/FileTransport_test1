@@ -3,5 +3,8 @@ package common;
 public enum Action {
     LOGIN,LOGOUT,REGISTER,  //登录登出注册
     SENDFILE,RECFILE,
+    NOTRESPONSE,//服务器无响应
+    READYTOSENDFILE,//准备开始发送文件
+    SENDFINISHED,
     LOGINSUCCESS,REGISTERSUCCESS,LOGOUTSUCCESS
 }

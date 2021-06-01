@@ -1,14 +1,10 @@
 package Client;
 
-import common.Action;
-import common.Response;
-import common.User;
-import common.Util;
+import common.*;
 
 import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.Scanner;
 
 public class Client {
@@ -20,9 +16,9 @@ public class Client {
         //建立客户端Socket
         Socket client_socket = new Socket(InetAddress.getLocalHost(), port);//修改为服务器IP地址
         Scanner sss = new Scanner(System.in);
-        String s=new String();
+        String s;
         System.out.println("（外部接口）登录/注册/发送文件：");
-        while((s=sss.next())!="-1") {
+        while(!(s = sss.next()).equals("-1")) {
             //测试代码
             if(s.equals("登录")) {
                 System.out.println("输入id：");
@@ -43,26 +39,64 @@ public class Client {
                 System.out.println("重复密码：");
                 String password2 = input.next();
                 //注册接口
-                if(password1.equals(password2))register(client_socket, id, password1);
+                if(password1.equals(password2)) register(client_socket, id, password1);
                 else System.out.println("两次密码不匹配.");
 
             }
             if (s.equals("发送文件")){
-                int teacherid=123; //需要获取老师的id
-                sendFile(client_socket,teacherid);
+                int teacherid=123; //要发给哪位老师
+                //if(sendFileRequestWithRes(client_socket).getAction()==Action.READYTOSENDFILE)
+                sendFile(client_socket,teacherid); //开始发送文件
+
             }
-            System.out.println("输入操作：");
+            System.out.println("输入操作："); //好像有点问题，不能继续发
         }
     }
-    /* 文件传输协议 先封装文件头发送，得到服务器的响应后建立文件数据的传输 */
+    //发送文件请求包并接收一个响应
+    private static Response sendFileRequestWithRes(Socket client_socket){
+        Response res=new Response();
+        //res.setAction();
+        Request request=new Request();
+
+        request.setAction(Action.SENDFILE);//设置请求的动作
+        try {
+            OutputStream os = client_socket.getOutputStream();
+            ObjectOutputStream oos= new ObjectOutputStream(os);
+            oos.writeObject(request);
+            System.out.println("0000");
+            InputStream is= client_socket.getInputStream();
+            ObjectInputStream ois=new ObjectInputStream(is);
+            res=(Response)ois.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return res;
+    }
+    //发送文件传输完毕包，不接收响应
+    private static void sendRequest(Socket client_socket){
+
+    Request request=new Request();
+    request.setAction(Action.SENDFINISHED);
+        try {
+            OutputStream os = client_socket.getOutputStream();
+            ObjectOutputStream oos= new ObjectOutputStream(os);
+            oos.writeObject(request);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+/* 发送文件，先封装文件头发送，得到响应后开始发送文件 */
     private static void sendFile(Socket client_socket,int teacherid) throws IOException {
         OutputStream os = client_socket.getOutputStream();
         ObjectOutputStream oos= new ObjectOutputStream(os);
         //封装请求对象
-        User sendf=new User(0,"0");
+        Request sendf=new Request();
         sendf.setAction(Action.SENDFILE);
         //对象序列化传输建立连接
         oos.writeObject(sendf);
+
         OutputStream out = client_socket.getOutputStream();
         //把文件接收者的id传过去
         byte [] id= Util.intToBytes(teacherid);
@@ -84,13 +118,12 @@ public class Client {
         byte[] names = new byte[100];
         int len = in.read(names);
         String nameIn = new String(names, 0, len);
-        System.out.println(nameIn);
+        //System.out.println(nameIn);
         if(!fileLast.equals(nameIn)){
-            //结束输出，并结束当前线程
+            //没有收到正确响应，结束输出，并结束当前线程
             client_socket.close();
             System.exit(1);
         }
-
 
         //如果收到正确响应，则开始发送文件
         FileInputStream fr = new FileInputStream(file);
@@ -112,7 +145,7 @@ public class Client {
 
 
         //可以先不关闭socket连接
-        client_socket.close();
+        //client_socket.close();
     }
 
     //注册接口
@@ -122,14 +155,16 @@ public class Client {
 
         //封装请求对象
         User user=new User(id,password);
-        user.setAction(Action.REGISTER);
+        Request request=new Request();
+        request.setAction(Action.REGISTER);
+        request.getDataMap().put("user",user);
         //对象序列化写出
-        oos.writeObject(user);
+        oos.writeObject(request);
 
         InputStream is= client_socket.getInputStream();
         ObjectInputStream ois = new ObjectInputStream(is);
         //获取相应响应
-        User response = (User) ois.readObject();
+        Response response = (Response) ois.readObject();
         if (response.getAction().equals(Action.REGISTERSUCCESS)) {
             System.out.println("注册成功！");
         }
@@ -144,23 +179,23 @@ public class Client {
 
         //封装请求对象
         User user=new User(id,password);
-        user.setAction(Action.LOGIN);
+        Request request=new Request();
+        request.setAction(Action.LOGIN);
+        request.getDataMap().put("user",user);
         //对象序列化写出
-        oos.writeObject(user);
+        oos.writeObject(request);
 
         InputStream is= client_socket.getInputStream();
         ObjectInputStream ois = new ObjectInputStream(is);
             //获取相应响应
-            User response = (User) ois.readObject();
+            Response response = (Response) ois.readObject();
             if (response.getAction()==Action.LOGINSUCCESS) {
                 System.out.println("登录成功！");
             }
-
-
-
     }
 
     public static void main(String[] args) throws IOException, ClassNotFoundException {
+
         new Client();
   }
 

@@ -22,12 +22,14 @@ public class Server {
         userSocketMap=new HashMap<String, Socket>();
         //建立服务器端监听socket，绑定监听端口
         ServerSocket server_socket = new ServerSocket(PORT);
+
         while(true){
             //监听客户端的请求
             Socket client_socket = server_socket.accept();
             userSocketMap.put(client_socket.getInetAddress().getHostAddress(),client_socket); //建立连接后缓存进服务器的列表
             //new Thread(new Task(client_socket)).start();
             threadPool.execute(new Task(client_socket));//使用线程池
+
         }
     }
 }

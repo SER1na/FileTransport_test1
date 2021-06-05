@@ -92,14 +92,46 @@ public class Task implements Runnable {
                 fos.write(bufIn, 0, len);
             }
             fos.close();
-            //再发送一个响应让发送方得知文件上传成功？
 
             //服务器暂存文件
-            //转发给指定老师端...待实现
 
 
+            //转发给指定老师端
 
-            //client_socket.close();
+            //Socket dest = Server.userSocketMap.get(new String(teacherids)); //获取连接
+            Socket dest = Server.userSocketMap.get("127.0.0.1"); //
+
+
+                OutputStream d_os = dest.getOutputStream();
+                ObjectOutputStream d_oos= new ObjectOutputStream(d_os);
+                //封装请求对象
+                Request sendf=new Request();
+                sendf.setAction(Action.SENDFILETOTEACHER);
+                //对象序列化传输建立连接
+                d_oos.writeObject(sendf);
+
+
+                File sendfile = new File("E:\\test\\"+studentip+"\\"+fileName);//读取文件
+            String fname = sendfile.getName();//获取文件完整名
+            String[] sendfileName = fname.split("\\.");//将文件名按照.来分割
+            String sendfileLast = sendfileName[sendfileName.length-1];//获取后缀名
+            //写入信息到输出流
+            out.write(fname.getBytes());
+
+
+                FileInputStream frToTeacher = new FileInputStream(sendfile);
+                System.out.println("文件大小："+String.valueOf(frToTeacher.available()/1000)+"k");
+                //发送文件信息
+                byte[] buf = new byte[1024];
+                int data_len=0;
+                //读取文件数据
+                while((data_len=frToTeacher.read(buf))!=-1){
+                    //发送给服务器
+                    d_os.write(buf,0,data_len);
+                }
+                //关流
+            d_os.close();
+            frToTeacher.close();
         }catch(Exception e){
             e.printStackTrace();
         }
@@ -129,12 +161,12 @@ public class Task implements Runnable {
 
     public boolean login(Socket client_socket,Request request) {
         try {
+            //获取用户信息
             User user = (User) request.getAttribute("user");
-
-            //数据库登录接口
+            //检查用户数据
             if(user.getId()==123 && user.getPassword().equals("123")){
                 System.out.println("登录成功.");
-                //响应
+                //给客户端反馈
                 Response loginres=new Response();
                 loginres.setAction(Action.LOGINSUCCESS);
                 ObjectOutputStream oos=new ObjectOutputStream(client_socket.getOutputStream());

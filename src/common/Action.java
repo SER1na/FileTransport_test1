@@ -6,5 +6,6 @@ public enum Action {
     NOTRESPONSE,//服务器无响应
     READYTOSENDFILE,//准备开始发送文件
     SENDFINISHED,
+    SENDFILETOTEACHER,//服务器发送文件给老师
     LOGINSUCCESS,REGISTERSUCCESS,LOGOUTSUCCESS
 }
